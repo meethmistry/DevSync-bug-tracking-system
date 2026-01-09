@@ -1,0 +1,103 @@
+# System Service – Bug Tracking Application
+
+This service manages all system-level master and reference data used across the Bug Tracking Application and is fully configuration-driven with admin-only access.
+
+## Overview (Single-Line Points)
+
+1. Centralized system module for all master/reference data.
+2. Admin-only service secured using Admin JWT authentication.
+3. Eliminates hard-coded enums by using database-driven masters.
+4. Manages project configuration masters (technologies, databases, languages, types).
+5. Controls bug classification masters (types, severities, priorities, statuses).
+6. Defines complete bug workflow lifecycle and transitions.
+7. Implements role-based access control (RBAC).
+8. Supports granular permission management.
+9. Maps roles to default permission sets.
+10. Supports project-specific roles (not global roles).
+11. Uses soft-delete strategy to preserve audit history.
+12. Ensures severity and priority are independent dimensions.
+13. Enforces workflow rules via permissions.
+14. Drives all UI dropdowns dynamically from master data.
+15. Designed for scalable, extensible microservice architecture.
+
+## System APIs Summary
+
+- Project Technologies, Databases, Programming Languages
+- Project Types and Industries
+- Bug Types, Severities, Priorities, Statuses
+- Bug Status Transitions (workflow rules)
+- User Roles, Permissions, Role-Permission Mappings  
+(All APIs support Create, Get, Update, Soft Delete and are ADMIN-only)
+
+## Folder Structure
+
+system-service
+│
+├── src
+│ ├── config
+│ │ └── db.js # Database connection setup
+│ │
+│ ├── controllers
+│ │ ├── access
+│ │ │ ├── permission.controller.js # Permissions master APIs
+│ │ │ ├── role.permission.mapping.controller.js
+│ │ │ └── user.role.controller.js # User roles APIs
+│ │ │
+│ │ ├── bug
+│ │ │ ├── bug.priority.controller.js # Bug priorities master
+│ │ │ ├── bug.severity.controller.js # Bug severities master
+│ │ │ ├── bug.status.controller.js # Bug statuses master
+│ │ │ └── bug.type.controller.js # Bug types master
+│ │ │
+│ │ └── project
+│ │ ├── database.controller.js # Databases master
+│ │ ├── industry.controller.js # Industries master
+│ │ ├── programmingLanguage.controller.js
+│ │ ├── projectType.controller.js # Project types master
+│ │ └── technology.controller.js # Technologies master
+│ │
+│ ├── models
+│ │ ├── access
+│ │ │ ├── permission.model.js
+│ │ │ ├── role.permission.mapping.model.js
+│ │ │ └── user.role.model.js
+│ │ │
+│ │ ├── bug
+│ │ │ ├── bug.priority.model.js
+│ │ │ ├── bug.severity.model.js
+│ │ │ ├── bug.status.model.js
+│ │ │ └── bug.type.model.js
+│ │ │
+│ │ └── project
+│ │ ├── database.model.js
+│ │ ├── industry.model.js
+│ │ ├── language.model.js
+│ │ ├── project.types.model.js
+│ │ └── technology.model.js
+│ │
+│ ├── routes
+│ │ ├── access.routes.js # Access & RBAC routes
+│ │ ├── bug.routes.js # Bug master routes
+│ │ └── project.routes.js # Project master routes
+│ │
+│ └── app.js # Express app configuration
+│
+├── server.js # Service entry point
+├── package.json # Project metadata & dependencies
+├── package-lock.json # Dependency lock file
+├── .env # Environment variables (git-ignored)
+├── README.md # Service documentation
+└── node_modules # Installed dependencies (git-ignored)
+
+
+## Core Design Principles
+
+- Severity represents technical impact; Priority represents business urgency.
+- Developers can resolve bugs but cannot close them.
+- QA or Project Managers verify and close bugs.
+- All deletes are soft deletes to preserve history.
+- Roles are assigned per project, not globally.
+- Workflow transitions are permission-driven.
+- System is fully extensible without code changes.
+- Master tables control UI behavior and validation.
+

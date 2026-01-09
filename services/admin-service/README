@@ -1,0 +1,61 @@
+# Admin Authentication Service – Bug Tracking Application
+
+A Node.js microservice that provides secure, PIN-based authentication for a SINGLE system admin, fully isolated from regular user authentication.
+
+## Overview (Single-Line Points)
+
+1. Handles authentication for only one system admin.
+2. Uses 4-digit PIN instead of username/password.
+3. Automatically bootstraps admin on first login.
+4. Default PIN is `1111` and stored only as a hash.
+5. Enforces a single admin document (`_id = SINGLE_ADMIN`).
+6. Uses JWT for session management.
+7. Supports multiple device logins.
+8. Stores active tokens per device.
+9. Tracks failed login attempts.
+10. Locks admin after repeated incorrect PIN attempts.
+11. Forces PIN change after default login.
+12. Supports logout from a single device.
+13. Supports logout from all devices.
+14. Validates admin session on app reload.
+15. Designed for scalable microservice architecture.
+
+## Admin Authentication APIs
+
+- POST   `/api/admin/auth/login`       – Login admin (auto-create admin if not exists)
+- POST   `/api/admin/auth/logout`      – Logout admin from current device
+- POST   `/api/admin/auth/change-pin`  – Change admin PIN
+- GET    `/api/admin/auth/me`          – Validate admin session
+- POST   `/api/admin/auth/logout-all`  – Logout admin from all devices
+
+## Folder Structure
+
+admin-service
+│
+├── src
+│ ├── config
+│ │ └── db.js # Database connection configuration
+│ │
+│ ├── constants
+│ │ └── constants.js # Fixed system constants (IDs, limits)
+│ │
+│ ├── controllers
+│ │ └── auth.controller.js # Admin authentication logic
+│ │
+│ ├── models
+│ │ └── admin.model.js # Admin schema (single document)
+│ │
+│ ├── routes
+│ │ └── routes.js # Admin authentication routes
+│ │
+│ ├── utils
+│ │ └── pin.util.js # PIN hashing & comparison helpers
+│ │
+│ └── app.js # Express app configuration
+│
+├── server.js # Service entry point
+├── package.json # Project metadata & dependencies
+├── package-lock.json # Dependency lock file
+├── .env # Environment variables (git-ignored)
+├── README.md # Service documentation
+└── node_modules # Installed dependencies (git-ignored)
