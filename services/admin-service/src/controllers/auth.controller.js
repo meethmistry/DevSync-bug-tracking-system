@@ -1,5 +1,5 @@
 const Admin = require("../models/admin.model");
-const { hashPin, comparePin } = require("../utils/pin.util");
+const { hashPin, comparePin } = require("../../../../shared/utils/pin.util");
 const { generateToken } = require("../../../../shared/utils/jwt.util");
 const constants = require("../constants/constants");
 
