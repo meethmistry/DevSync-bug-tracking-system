@@ -16,4 +16,10 @@ app.use(
   createServiceProxy('System', process.env.ADMIN_SYSTEM_SERVICE_URL)
 );
 
+app.use(
+  '/users',
+  createServiceProxy('Users', process.env.USER_SERVICE_URL)
+);
+
+
 module.exports = app;

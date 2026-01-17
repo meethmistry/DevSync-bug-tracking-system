@@ -42,7 +42,9 @@ const tokenAuth = async (req, res, next) => {
     if (!token)
       return res.status(401).json({ success: false, message: "Unauthorized" });
 
-    verifyToken(token);
+    const decoded = verifyToken(token);
+
+    req.user = decoded;
 
     next();
   } catch (error) {

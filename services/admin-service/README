@@ -1,61 +1,277 @@
-# Admin Authentication Service – Bug Tracking Application
+# Admin Authentication Service – Complete API Documentation
 
-A Node.js microservice that provides secure, PIN-based authentication for a SINGLE system admin, fully isolated from regular user authentication.
+Service Name: Admin Authentication Service  
+Base URL: http://localhost:3001  
+Purpose: Secure PIN-based authentication for a **single system administrator**  
+Authentication Method: JWT (JSON Web Token)  
+Admin Model: Single admin document with fixed ID → `SINGLE_ADMIN`
 
-## Overview (Single-Line Points)
+---
 
-1. Handles authentication for only one system admin.
-2. Uses 4-digit PIN instead of username/password.
-3. Automatically bootstraps admin on first login.
-4. Default PIN is `1111` and stored only as a hash.
-5. Enforces a single admin document (`_id = SINGLE_ADMIN`).
-6. Uses JWT for session management.
-7. Supports multiple device logins.
-8. Stores active tokens per device.
-9. Tracks failed login attempts.
-10. Locks admin after repeated incorrect PIN attempts.
-11. Forces PIN change after default login.
-12. Supports logout from a single device.
-13. Supports logout from all devices.
-14. Validates admin session on app reload.
-15. Designed for scalable microservice architecture.
+## Architecture Overview
 
-## Admin Authentication APIs
+### Single Admin System
+- Only **ONE admin** exists
+- Admin document ID is fixed: `SINGLE_ADMIN`
+- Authentication is **PIN-based (4-digit)** instead of username/password
+- Supports **multiple concurrent device sessions**
 
-- POST   `/api/admin/auth/login`       – Login admin (auto-create admin if not exists)
-- POST   `/api/admin/auth/logout`      – Logout admin from current device
-- POST   `/api/admin/auth/change-pin`  – Change admin PIN
-- GET    `/api/admin/auth/me`          – Validate admin session
-- POST   `/api/admin/auth/logout-all`  – Logout admin from all devices
+### Auto-Bootstrap Mechanism
+- Admin document is **auto-created on first login**
+- Default PIN: `1111` (stored as bcrypt hash)
+- No manual setup required
+
+### Session Management
+- JWT-based authentication
+- Each device uses a unique `deviceId`
+- Multiple devices allowed simultaneously
+- Tokens are stored per device and validated on every request
+
+---
+
+## Security Features
+
+### PIN Protection
+- Exactly **4 numeric digits**
+- Stored as bcrypt hash only
+- Strict validation (numeric + length)
+
+### Account Locking
+- Failed login attempts tracked
+- Account locks after **5 failed attempts**
+- Lock duration: **30 minutes**
+- Auto-unlocks after lock period
+
+### Default PIN Enforcement
+- Login response includes `isDefaultPin`
+- Frontend must force PIN change if `true`
+
+### Token Management
+- JWT expiry: **24 hours**
+- Logout per device or all devices supported
+
+---
+
+### 1. Admin Login (Auto-Bootstrap)
+
+Endpoint  
+POST `/admin/auth/login`
+
+Purpose  
+Authenticate admin and create session. Auto-creates admin on first login.
+
+Authentication  
+❌ Not Required
+
+Request Body  
+- pin (string, required): 4-digit numeric PIN  
+- deviceId (string, required): unique device identifier  
+
+Example Request
+{
+  "pin": "1111",
+  "deviceId": "device_web_chrome_001"
+}
+
+Success Response (200)
+{
+  "success": true,
+  "token": "JWT_TOKEN_HERE",
+  "expiresIn": "24h",
+  "isDefaultPin": true
+}
+
+Error Responses
+- 400: Missing fields  
+- 401: Incorrect PIN  
+- 403: Account locked  
+
+---
+
+### 2. Admin Logout (Current Device)
+
+Endpoint  
+POST `/admin/auth/logout`
+
+Purpose  
+Logout admin from **current device only**
+
+Authentication  
+✅ Required (Bearer Token)
+
+Headers  
+Authorization: Bearer TOKEN
+
+Success Response (200)
+{
+  "success": true,
+  "message": "Logged out successfully"
+}
+
+Error
+- 401: Invalid or expired token
+
+---
+
+### 3. Change Admin PIN
+
+Endpoint  
+POST `/admin/auth/change-pin`
+
+Purpose  
+Change admin PIN (mandatory after default login)
+
+Authentication  
+✅ Required
+
+Request Body  
+- oldPin (string, required)  
+- newPin (string, required)  
+- confirmNewPin (string, required)  
+
+Example Request
+{
+  "oldPin": "1111",
+  "newPin": "5678",
+  "confirmNewPin": "5678"
+}
+
+Success Response (200)
+{
+  "success": true,
+  "message": "PIN changed successfully"
+}
+
+Error Responses
+- 400: Missing fields
+- 400: Invalid PIN format
+- 400: PINs do not match
+- 401: Old PIN incorrect
+
+---
+
+### 4. Check Admin Session (Auto Login)
+
+Endpoint  
+GET `/admin/auth/me`
+
+Purpose  
+Validate session & auto-login on page reload
+
+Authentication  
+✅ Required
+
+Headers  
+Authorization: Bearer TOKEN
+
+Success Response (200)
+{
+  "success": true,
+  "admin": {
+    "id": "SINGLE_ADMIN",
+    "pinLastChangedAt": "2025-01-15T10:30:00.000Z"
+  }
+}
+
+Error
+- 401: Invalid or expired token
+
+---
+
+### 5. Logout From All Devices
+
+Endpoint  
+POST `/admin/auth/logout-all`
+
+Purpose  
+Logout admin from **ALL devices**
+
+Authentication  
+✅ Required
+
+Headers  
+Authorization: Bearer TOKEN
+
+Success Response (200)
+{
+  "success": true,
+  "message": "Logged out from all devices"
+}
+
+Error
+- 401: Invalid or expired token
+
+---
+
+## Standard Error Response Format
+
+{
+  "success": false,
+  "message": "Error description"
+}
+
+---
+
+## HTTP Status Codes
+
+- 200 → Success  
+- 400 → Bad Request (validation issues)  
+- 401 → Unauthorized (invalid token / PIN)  
+- 403 → Forbidden (account locked)  
+- 500 → Internal Server Error  
+
+---
+
+## Constants Configuration
+
+DEFAULT_ADMIN_ID = SINGLE_ADMIN  
+DEFAULT_PIN = 1111  
+MAX_FAILED_ATTEMPTS = 5  
+LOCK_TIME_MINUTES = 30  
+TOKEN_EXPIRY = 24h  
+
+---
 
 ## Folder Structure
 
 admin-service
 │
 ├── src
-│ ├── config
-│ │ └── db.js # Database connection configuration
-│ │
-│ ├── constants
-│ │ └── constants.js # Fixed system constants (IDs, limits)
-│ │
-│ ├── controllers
-│ │ └── auth.controller.js # Admin authentication logic
-│ │
-│ ├── models
-│ │ └── admin.model.js # Admin schema (single document)
-│ │
-│ ├── routes
-│ │ └── routes.js # Admin authentication routes
-│ │
-│ ├── utils
-│ │ └── pin.util.js # PIN hashing & comparison helpers
-│ │
-│ └── app.js # Express app configuration
+│   ├── config
+│   │   └── db.js                 # Database connection
+│   │
+│   ├── constants
+│   │   └── constants.js          # Fixed system constants
+│   │
+│   ├── controllers
+│   │   └── auth.controller.js    # Admin auth logic
+│   │
+│   ├── models
+│   │   └── admin.model.js        # Single admin schema
+│   │
+│   ├── routes
+│   │   └── routes.js             # Auth routes
+│   │
+│   ├── utils
+│   │   └── pin.util.js           # PIN hash & validation helpers
+│   │
+│   └── app.js                    # Express app setup
 │
-├── server.js # Service entry point
-├── package.json # Project metadata & dependencies
-├── package-lock.json # Dependency lock file
-├── .env # Environment variables (git-ignored)
-├── README.md # Service documentation
-└── node_modules # Installed dependencies (git-ignored)
+├── server.js                     # Service entry point
+├── package.json
+├── package-lock.json
+├── .env                          # Environment variables
+├── README.md                     # Documentation
+└── node_modules                  # Dependencies
+
+---
+
+## Important Notes
+
+- Only **ONE admin** can exist
+- PIN recovery is manual (DB reset)
+- Always force PIN change when `isDefaultPin = true`
+- Use HTTPS & rate-limiting in production
+- Do NOT log PINs or tokens
+
+---

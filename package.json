@@ -8,20 +8,29 @@
     "dev:gateway": "npm --prefix api-gateway run dev",
     "dev:admin": "npm --prefix services/admin-service run dev",
     "dev:system": "npm --prefix services/system-service run dev",
-    "dev:all": "concurrently \"npm run dev:gateway\" \"npm run dev:admin\" \"npm run dev:system\"",
+    "dev:email": "npm --prefix services/email-service run dev",
+    "dev:users": "npm --prefix services/user-service run dev",
+    "dev:all": "concurrently \"npm run dev:gateway\" \"npm run dev:admin\" \"npm run dev:system\" \"npm run dev:email\" \"npm run dev:users\"",
     "start:gateway": "npm --prefix api-gateway start",
     "start:admin": "npm --prefix services/admin-service start",
     "start:system": "npm --prefix services/system-service start",
-    "start:all": "concurrently \"npm run start:gateway\" \"npm run start:admin\" \"npm run start:system\""
+    "start:email": "npm --prefix services/email-service start",
+    "start:users": "npm --prefix services/user-service start",
+    "start:all": "concurrently \"npm run start:gateway\" \"npm run start:admin\" \"npm run start:system\" \"npm run start:email\" \"npm run start:users\""
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
+    "axios": "^1.13.2",
+    "bcrypt": "^6.0.0",
     "bcryptjs": "^3.0.3",
     "concurrently": "^9.2.1",
+    "fs": "^0.0.1-security",
     "jsonwebtoken": "^9.0.3",
-    "nodemon": "^3.1.11"
+    "multer": "^2.0.2",
+    "nodemon": "^3.1.11",
+    "path": "^0.12.7"
   }
 }

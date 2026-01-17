@@ -1,7 +1,7 @@
 const Admin = require("../models/admin.model");
 const { hashPin, comparePin } = require("../../../../shared/utils/pin.util");
 const { generateToken } = require("../../../../shared/utils/jwt.util");
-const constants = require("../../../../shared/constants/admin.constants");
+const constants = require("../../../../shared/constants/constants");
 
 // Defualt Pin
 const ensureAdminExists = async () => {
